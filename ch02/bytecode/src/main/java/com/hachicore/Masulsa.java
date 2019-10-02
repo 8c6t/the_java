@@ -1,0 +1,18 @@
+package com.hachicore;
+
+public class Masulsa {
+
+    public static void main(String[] args) {
+        // 바이트 코드 변환
+//        try {
+//            new ByteBuddy().redefine(Moja.class)
+//                    .method(named("pullOut")).intercept(FixedValue.value("Rabbit"))
+//                    .make().saveIn(new File("D:\\workspace\\java\\the_java\\ch02\\bytecode\\target\\classes\\"));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+        System.out.println(new Moja().pullOut());
+    }
+
+}
