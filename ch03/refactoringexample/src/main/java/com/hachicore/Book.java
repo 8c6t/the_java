@@ -1,7 +1,10 @@
 package com.hachicore;
 
+// @MyAnnotation(name="hachicore", number=8620)
+@MyAnnotation("hachicore")
 public class Book {
 
+    @MyAnnotation
     private String a = "a";
 
     private static String b = "BOOK";
@@ -15,6 +18,8 @@ public class Book {
     public Book() {
     }
 
+    // @MyAnnotation
+    @AnotherAnnotation
     public Book(String a, String d, String e) {
         this.a = a;
         this.d = d;
@@ -25,6 +30,7 @@ public class Book {
         System.out.println("F");
     }
 
+    @AnotherAnnotation
     public void g() {
         System.out.println("g");
     }
