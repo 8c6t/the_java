@@ -12,8 +12,25 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static org.mockito.Mockito.*;
 
 public class BookServiceTest {
+
+    @Test
+    public void di() throws Exception {
+        BookRepository bookRepositoryMock = mock(BookRepository.class);
+
+        Book hibernateBook = new Book();
+        hibernateBook.setTitle("Hibernate");
+        when(bookRepositoryMock.save(any())).thenReturn(hibernateBook);
+
+        BookService bookService = new BookService(bookRepositoryMock);
+
+        Book book = new Book();
+        book.setTitle("spring");
+        bookService.rent(book);
+        bookService.returnBook(book);
+    }
 
     @Test
     public void di_cglib() {
@@ -54,6 +71,16 @@ public class BookServiceTest {
                     }
                 }))
                 .make().load(BookService.class.getClassLoader()).getLoaded();
+
+//        Class<? extends BookService> proxyClass = new ByteBuddy().subclass(BookService.class)
+//                .method(named("rent")).intercept(InvocationHandlerAdapter.of((o, method, objects) -> {
+//                    BookService bookService = new BookService();
+//                    System.out.println("aaaa");
+//                    Object invoke = method.invoke(bookService, objects);
+//                    System.out.println("bbbb");
+//                    return invoke;
+//                }))
+//                .make().load(BookService.class.getClassLoader()).getLoaded();
 
         BookService bookService = proxyClass.getConstructor(null).newInstance();
 
