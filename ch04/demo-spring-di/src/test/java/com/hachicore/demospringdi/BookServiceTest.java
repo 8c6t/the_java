@@ -1,34 +1,62 @@
 package com.hachicore.demospringdi;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.implementation.InvocationHandlerAdapter;
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
+import net.sf.cglib.proxy.MethodProxy;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+
+import static net.bytebuddy.matcher.ElementMatchers.named;
 
 public class BookServiceTest {
 
-    BookService bookService = (BookService) Proxy.newProxyInstance(
-            BookService.class.getClassLoader(),
-            new Class[]{BookService.class},
-            new InvocationHandler() {
-                BookService bookService = new DefaultBookService();
-                @Override
-                public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
-                    if (method.getName().equals("rent")) {
+    @Test
+    public void di_cglib() {
+        MethodInterceptor handler = new MethodInterceptor() {
+            BookService bookService = new BookService();
+            @Override
+            public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
+                if (method.getName().equals("rent")) {
+                    System.out.println("aaaa");
+                    Object invoke = method.invoke(bookService, objects);
+                    System.out.println("bbbb");
+                    return invoke;
+                }
+                return method.invoke(bookService, objects);
+            }
+        };
+
+        BookService bookService = (BookService) Enhancer.create(BookService.class, handler);
+
+        Book book = new Book();
+        book.setTitle("spring");
+        bookService.rent(book);
+
+        bookService.returnBook(book);
+    }
+
+    @Test
+    public void di_bytebuddy() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        Class<? extends BookService> proxyClass = new ByteBuddy().subclass(BookService.class)
+                .method(named("rent")).intercept(InvocationHandlerAdapter.of(new InvocationHandler() {
+                    BookService bookService = new BookService();
+                    @Override
+                    public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
                         System.out.println("aaaa");
                         Object invoke = method.invoke(bookService, objects);
                         System.out.println("bbbb");
                         return invoke;
                     }
+                }))
+                .make().load(BookService.class.getClassLoader()).getLoaded();
 
-                    return method.invoke(bookService, objects);
-                }
-            }
-    );
+        BookService bookService = proxyClass.getConstructor(null).newInstance();
 
-    @Test
-    public void di() {
         Book book = new Book();
         book.setTitle("spring");
         bookService.rent(book);
